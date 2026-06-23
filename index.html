@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>학생부 작성 도우미</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#f5f4f0;color:#1a1a1a;min-height:100vh;padding:2rem 1rem}
+.wrap{max-width:720px;margin:0 auto}
+.hd{margin-bottom:1.5rem}
+.hd .tag{font-size:11px;letter-spacing:.1em;color:#0f6e56;text-transform:uppercase;font-weight:500}
+.hd h1{font-size:26px;font-weight:600;margin-top:4px;color:#0a0a0a}
+.card{background:#fff;border-radius:16px;border:1px solid #e8e6e0;padding:1.5rem;margin-bottom:1rem}
+.card-title{font-size:13px;font-weight:600;color:#444;margin-bottom:1rem}
+label{font-size:12px;color:#666;display:block;margin-bottom:7px;font-weight:500;letter-spacing:.03em}
+input[type=text],textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #d8d6d0;font-size:14px;font-family:inherit;background:#fafaf8;color:#1a1a1a;transition:border .15s;outline:none}
+input[type=text]:focus,textarea:focus{border-color:#1d9e75;background:#fff}
+textarea{resize:vertical;line-height:1.7}
+input[type=range]{width:100%;accent-color:var(--tc,#1d9e75);cursor:pointer;height:4px;margin:6px 0}
+.tabs{display:flex;gap:4px;margin-bottom:1rem;background:#fff;border-radius:12px;border:1px solid #e8e6e0;padding:4px}
+.tab-btn{flex:1;padding:9px 0;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;border-radius:9px;color:#888;transition:all .15s;font-family:inherit;white-space:nowrap}
+.tab-btn.active{color:#fff}
+.tab-btn:hover:not(.active){background:#f5f5f5}
+.btn-primary{width:100%;padding:13px;font-size:15px;font-weight:600;color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit;transition:opacity .15s;background:var(--tc,#1d9e75)}
+.btn-primary:hover{opacity:.88}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{padding:9px 16px;font-size:13px;border-radius:8px;border:1px solid #d8d6d0;background:#fff;cursor:pointer;font-family:inherit;color:#444;transition:all .15s;white-space:nowrap}
+.btn-secondary:hover{border-color:#1d9e75;color:#0f6e56}
+.btn-danger{padding:9px 16px;font-size:13px;border-radius:8px;border:1px solid #fcc;background:#fff5f5;cursor:pointer;font-family:inherit;color:#c00;transition:all .15s}
+.btn-danger:hover{background:#fee}
+.btn-apply{width:100%;padding:12px;font-size:14px;font-weight:600;color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit;transition:opacity .15s;background:#2d6a4f;margin-top:12px;display:none}
+.btn-apply:hover{opacity:.88}
+.loading{display:none;text-align:center;padding:2.5rem;color:#666;font-size:14px}
+.spinner{width:28px;height:28px;border:2.5px solid #e8e6e0;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.result-wrap{display:none}
+.result-card{background:#fff;border-radius:16px;border:1px solid #e8e6e0;padding:1.5rem;margin-bottom:1rem}
+.result-card.q-card{background:#fffdf7;border-color:#f5c88a}
+.result-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #f0ede8;flex-wrap:wrap;gap:8px}
+.result-title{font-size:13px;font-weight:600;color:#0a0a0a}
+.char-badge{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500}
+.copy-btn{padding:5px 12px;font-size:12px;border-radius:6px;border:1px solid #d8d6d0;background:#fff;cursor:pointer;font-family:inherit;color:#444;transition:all .15s}
+.copy-btn:hover{border-color:#1d9e75;color:#1d9e75}
+.result-body{font-size:14px;line-height:1.95;color:#1a1a1a;white-space:pre-wrap}
+.competencies{margin-top:14px;padding-top:12px;border-top:1px solid #f0ede8;font-size:12px;color:#888}
+.opts-sec{margin-bottom:1rem}
+.opts-title{font-size:12px;color:#888;margin-bottom:8px;font-weight:500}
+.opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt-action{padding:11px 14px;font-size:13px;border-radius:10px;border:1px solid #d8d6d0;background:#fff;cursor:pointer;text-align:left;font-family:inherit;color:#333;transition:all .15s}
+.opt-action:hover{border-color:#1d9e75;color:#0f6e56;background:#f5fdf9}
+.sub-modal{display:none;background:#f9f8f5;border:1px solid #e8e6e0;border-radius:12px;padding:1rem;margin-bottom:1rem}
+.sub-label{font-size:12px;color:#666;margin-bottom:8px;font-weight:500}
+.tag-btn{padding:6px 12px;font-size:12px;border-radius:20px;border:1px solid #d8d6d0;background:#fff;cursor:pointer;font-family:inherit;color:#444;transition:all .15s;margin:3px}
+.tag-btn:hover{border-color:#1d9e75;color:#0f6e56}
+.tag-btn.selected{background:#1d9e75;color:#fff;border-color:#1d9e75}
+.err-msg{display:none;padding:12px 14px;background:#fff5f5;border:1px solid #fdd;border-radius:8px;font-size:13px;color:#c00;margin-bottom:1rem}
+.save-bar{display:none;gap:8px;align-items:center;padding:12px 14px;background:#f0fdf8;border:1px solid #9fd1bf;border-radius:10px;margin-bottom:1rem;flex-wrap:wrap}
+.save-bar span{font-size:13px;color:#0f6e56;flex:1}
+.stu-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;margin-top:8px}
+.stu-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;border:1px solid #e8e6e0;background:#fafaf8;font-size:13px;cursor:pointer;transition:all .15s}
+.stu-item:hover{border-color:#aaa;background:#f0fdf8}
+.stu-item.active{border-color:#1d9e75;background:#e1f5ee;color:#0f6e56;font-weight:500}
+.badges{display:flex;gap:3px;flex-wrap:wrap}
+.badge{font-size:10px;color:#fff;padding:2px 6px;border-radius:8px;font-weight:500}
+.row{display:flex;gap:8px;align-items:flex-end}
+.row>*:first-child{flex:1}
+.sel-bar{display:none;margin-bottom:1rem;padding:10px 12px;background:#e1f5ee;border-radius:8px;font-size:13px;color:#0f6e56;font-weight:500}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.dl-modal{display:none;background:#f9f8f5;border:1px solid #d8d6d0;border-radius:12px;padding:1rem;margin-top:10px}
+.dl-modal textarea{height:180px;font-size:12px;background:#fff;font-family:'Courier New',monospace}
+.model-badge{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:500;background:#e8f5e9;color:#2e7d32;margin-left:6px}
+@media(max-width:520px){.tabs{flex-wrap:wrap}.tab-btn{flex:calc(33% - 4px)}.opts-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hd">
+    <p class="tag">고등학교 학생부</p>
+    <h1>학생부 작성 도우미</h1>
+  </div>
+
+  <!-- 학생 명단 -->
+  <div class="card">
+    <div class="card-title">👥 학생 명단</div>
+    <div style="margin-bottom:10px">
+      <label>학생 이름 추가 (쉼표 또는 줄바꿈으로 구분)</label>
+      <div class="row">
+        <textarea id="names-input" style="height:68px" placeholder="예) 김민준, 이서연, 박지호&#10;또는 한 명씩 입력"></textarea>
+        <button class="btn-secondary" onclick="addStudents()" style="height:68px;padding:0 18px">추가</button>
+      </div>
+    </div>
+    <div id="stu-list" class="stu-list" style="display:none"></div>
+    <div id="stu-select-notice" style="display:block;padding:10px 12px;background:#f0fdf8;border:1px solid #9fd1bf;border-radius:8px;font-size:13px;color:#0f6e56;margin-top:8px">
+      👆 목록에서 학생을 선택해 주세요.
+    </div>
+    <p id="no-stu" style="font-size:13px;color:#bbb;padding:6px 0;display:none">등록된 학생이 없습니다.</p>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn-secondary" id="dl-txt" onclick="downloadAll('txt')" style="display:none">⬇ 전체 저장 (TXT)</button>
+      <button class="btn-secondary" id="dl-csv" onclick="downloadAll('csv')" style="display:none">⬇ 전체 저장 (CSV)</button>
+      <button class="btn-danger" id="clear-all" onclick="clearAll()" style="display:none">전체 초기화</button>
+    </div>
+    <div class="dl-modal" id="dl-modal">
+      <p class="sub-label" id="dl-modal-title">저장 내용 (복사해서 사용하세요)</p>
+      <textarea id="dl-content" readonly onclick="this.select()"></textarea>
+      <p style="font-size:11px;color:#aaa;margin-top:6px">전체 선택 후 복사(Ctrl+C / Cmd+C)하세요.</p>
+    </div>
+  </div>
+
+  <!-- 탭 -->
+  <div class="tabs" id="tab-bar"></div>
+
+  <!-- 선택 학생 표시 -->
+  <div class="sel-bar" id="sel-bar">✏️ 작성 중인 학생: <span id="sel-name"></span></div>
+
+  <!-- 탭 패널들 -->
+  <div id="panels"></div>
+
+  <div class="loading" id="loading">
+    <div class="spinner" id="spinner"></div>
+    <span id="loading-msg">작성하고 있습니다...</span>
+  </div>
+
+  <!-- 결과 -->
+  <div class="result-wrap" id="result-wrap">
+    <div class="result-card" id="result-card">
+      <div class="result-hd">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+          <span class="result-title" id="result-label"></span>
+          <span class="model-badge" id="model-badge"></span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span class="char-badge" id="char-display"></span>
+          <button class="copy-btn" id="copy-btn" onclick="copyResult(this)">복사</button>
+        </div>
+      </div>
+      <div class="result-body" id="result-text"></div>
+      <div class="competencies" id="competencies"></div>
+    </div>
+
+    <div id="save-bar" class="save-bar">
+      <span id="save-bar-msg"></span>
+      <button class="btn-secondary" id="save-btn" onclick="saveToStudent()">이 학생에 저장</button>
+    </div>
+
+    <div class="opts-sec" id="opts-sec">
+      <p class="opts-title">수정 옵션</p>
+      <div class="opts-grid">
+        <button class="opt-action" onclick="toggleSub('chars-modal')">↔ 글자 수 재조정</button>
+        <button class="opt-action" onclick="toggleSub('comp-modal')">★ 역량 강조</button>
+        <button class="opt-action" onclick="reGenerate()">↺ 다시 작성</button>
+        <button class="opt-action" onclick="toggleSub('ep-modal')">＋ 내용 추가</button>
+      </div>
+    </div>
+
+    <!-- 글자 수 조정 -->
+    <div class="sub-modal" id="chars-modal">
+      <p class="sub-label">변경할 글자 수 선택</p>
+      <label>글자 수: <strong id="adj-chars-display" style="color:#1d9e75">200자</strong></label>
+      <input type="range" id="adj-chars-slider" min="100" max="500" step="50" value="200"
+        oninput="onAdjCharsChange(this.value)"/>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#aaa;margin-top:2px">
+        <span>100자</span><span>200자</span><span>300자</span><span>400자</span><span>500자</span>
+      </div>
+    </div>
+
+    <!-- 역량 강조 -->
+    <div class="sub-modal" id="comp-modal">
+      <p class="sub-label">강조할 역량을 선택하세요 (복수 선택 가능)</p>
+      <div>
+        <button class="tag-btn" onclick="toggleCompTag(this)">비판적 사고력</button>
+        <button class="tag-btn" onclick="toggleCompTag(this)">문제해결력</button>
+        <button class="tag-btn" onclick="toggleCompTag(this)">창의적 사고</button>
+        <button class="tag-btn" onclick="toggleCompTag(this)">의사소통역량</button>
+        <button class="tag-btn" onclick="toggleCompTag(this)">자기관리역량</button>
+        <button class="tag-btn" onclick="toggleCompTag(this)">공동체역량</button>
+        <button class="tag-btn" onclick="toggleCompTag(this)">정보처리역량</button>
+        <button class="tag-btn" onclick="toggleCompTag(this)">탐구력</button>
+        <button class="tag-btn" onclick="toggleCompTag(this)">리더십</button>
+        <button class="tag-btn" onclick="toggleCompTag(this)">진로역량</button>
+      </div>
+    </div>
+
+    <!-- 내용 추가 -->
+    <div class="sub-modal" id="ep-modal">
+      <p class="sub-label">추가할 내용을 입력하세요</p>
+      <textarea id="ep-input" style="height:80px;margin-bottom:0" placeholder="추가로 반영할 에피소드나 내용을 입력하세요."
+        oninput="onEpisodeChange(this.value)"></textarea>
+    </div>
+
+    <!-- 적용하기 버튼 (수정사항이 있을 때만 노출) -->
+    <button class="btn-apply" id="apply-btn" onclick="applyMods()">✓ 수정사항 적용하기</button>
+  </div>
+</div>
+
+<div style="text-align:center;padding:2rem 1rem 1rem;font-size:12px;color:#bbb;">Made by <strong style="color:#888">수달샘</strong> &middot; Powered by Claude</div>
+
+<script>
+/* ────────────────────────────────
+   설정값 (배포 전 수정 필요)
+──────────────────────────────── */
+const WORKER_URL = '/api/generate';
+
+const MODELS = {
+  haiku:  'anthropic/claude-haiku-4-5',   // 초안 생성 (빠르고 저렴)
+  sonnet: 'anthropic/claude-sonnet-4-6',  // 수정/재작성 (고품질)
+};
+
+/* ────────────────────────────────
+   탭 설정
+──────────────────────────────── */
+const TABS = [
+  { id:'se',  label:'📚 세특',   color:'#1d9e75', seLayout:true },
+  { id:'ja',  label:'🏫 자율',   color:'#6366f1', placeholder:'학급 회의에서 사회자 역할 맡음, 학교 환경 캠페인 기획 주도, 학생 자치회 활동에서 의견 조율함' },
+  { id:'do',  label:'🎨 동아리', color:'#ec4899', placeholder:'토론 동아리에서 반론 논리 구성, 과학 실험 동아리 팀장 역할, 발표 준비 과정에서 자료 분석 주도' },
+  { id:'ji',  label:'🎯 진로',   color:'#f59e0b', placeholder:'의대 진로 탐색 활동 참여, 직업인 특강 후 진로 계획 발표, 관련 도서 읽고 심화 탐구 진행' },
+  { id:'hb',  label:'📝 행발',   color:'#ef4444', placeholder:'책임감이 강하고 어려운 친구를 잘 도움, 수업 참여도 높고 발표 적극적, 학급 부반장으로 갈등 중재 역할' },
+];
+
+const LABELS = { se:'세특', ja:'자율활동', do:'동아리활동', ji:'진로활동', hb:'행발' };
+
+/* ────────────────────────────────
+   시스템 프롬프트
+──────────────────────────────── */
+const BASE_RULES = `
+## 핵심 원칙 (가장 중요 - 반드시 준수)
+- 교사가 입력한 메모에 명시적으로 기재된 내용만 사용
+- 메모에 없는 내용은 절대로 추가, 유추, 상상, 추측하지 않음
+- 글자 수를 채우기 위해 없는 내용을 만들지 않음. 차라리 짧게 작성하는 것이 나음
+
+## 메모 충분성 3단계 판단
+[1단계 - 너무 부족] 단어 1~3개, 의미 불명확 → 즉시 추가 질문
+[2단계 - 부족] 1~2문장이지만 구체적 내용(어떻게, 무엇을, 어떤 결과)이 빠진 경우 → 추가 질문
+[3단계 - 충분] 구체적 활동 내용, 과정, 결과가 모두 담긴 경우 → 바로 작성
+
+## 기재 절대 금지 (교육부 기재요령)
+공인어학시험·대회 성적·수상, 논문·도서출간, 특정 대학명·기관명·강사명,
+부모 직위 암시, 자격증, 학교명·재단명, 모의고사 성적
+
+## 금지 문장
+~다짐함 / ~알게 됨 / ~라고 느낌 / ~라고 생각함 / ~에 대해 배움 / ~을 이해함
+~활동지를 작성함 / ~활동에 참여함 / ~모습을 보임
+"최고", "완벽한", "탁월한", "뛰어난" 등 과장 표현 금지 / 학생 간 비교 표현 금지`;
+
+const PROMPTS = {
+
+  se: `당신은 고등학교 학교생활기록부 세특 작성 전문가입니다.
+${BASE_RULES}
+
+## 메모 충분성 판단 (최우선 - 엄격 적용)
+'학생 특이사항'을 기준으로 판단합니다. '수업 활동 내용'은 맥락 정보이므로 참고만 합니다.
+
+[1단계·2단계 해당 시] 세특을 작성하지 않고 반드시 아래 형식으로만 응답:
+❓ 더 구체적인 내용이 필요해요
+
+작성된 메모만으로는 메모에 없는 내용을 추가하지 않고는 세특을 쓸 수 없어요.
+아래 내용을 추가로 알려주시면 더 정확한 세특을 작성할 수 있어요:
+1. [관찰된 구체적 활동 방법이나 과정에 대한 질문 - 과목 특성 반영]
+2. [학생이 만든 결과물이나 발표 내용에 대한 질문]
+3. [활동 중 드러난 학생의 태도나 특이사항에 대한 질문]
+
+※ 메모의 내용만으로 작성을 원하시면 "현재 메모로 작성해줘"라고 입력해주세요.
+
+## 서술 구조 (반드시 이 순서로)
+총평 → 성취수준 → 수행과정 및 결과 → 교과역량
+
+- 총평: 특정 성취기준에 국한되지 않은 교과학습 전반에서 관찰된 학생의 특성
+- 성취수준: 해당 성취기준에 대해 학생이 도달한 수준을 포괄적으로 진술
+- 수행과정 및 결과: 구체적인 평가 과제를 통해 관찰한 수행과정과 결과 (성취수준의 근거)
+- 교과역량: 평가나 수업을 통해 관찰된 역량에 대한 특성
+
+## 역량 표현 키워드
+[사고 능력] 직관적 사고 / 비판적 사고 / 논리적 사고 / 창의적 사고 / 융합적 사고 / 통합적 사고 / 분석적 사고 / 수리적 사고력 / 통계적 분석력 / 인과관계 분석력 / 확산적 사고 / 전략적 사고 / 유연한 사고 / 실험적 사고 / 미래지향적 사고 / 글로벌적 사고
+[문제 해결] 문제 인식력 / 원인 분석 능력 / 대안 구상력 / 대안 선택·적용력 / 해결안 실천력 / 결과분석력 / 위기 대처 능력 / 자기 개선 능력 / 과제 집중력 / 과제 수행력
+[성향·공동체] 지적호기심 / 도전정신 / 열정·능동성 / 개방성 / 자아 존중감 / 타인 존중감 / 리더십 / 팀워크 / 공감대 형성능력 / 갈등 조정 능력 / 협동심 / 배려심 / 봉사심·헌신성 / 이타심 / 포용력 / 책임감 / 인내력 / 윤리성 / 판단력
+
+## 과목별 핵심역량 (해당 과목에 맞는 역량 사용)
+- 국어: 비판적·창의적 사고역량 / 자료·정보 활용 역량 / 의사소통 역량 / 공동체·대인관계 역량 / 문화 향유 역량 / 자기성찰·계발 역량
+- 수학: 문제 해결 능력 / 추론 능력 / 창의·융합 능력 / 의사소통 능력 / 정보 처리 능력 / 태도 및 실천 능력
+- 영어: 영어 의사소통 역량 / 자기 관리 역량 / 공동체 역량 / 지식정보처리 역량 / 정보 활용 능력
+- 사회: 창의적 사고력 / 비판적 사고력 / 문제해결력 및 의사결정력 / 의사소통 및 협업능력
+- 과학: 과학적 사고력 / 과학적 탐구 능력 / 과학적 문제해결력 / 과학적 의사소통 능력 / 과학적 참여와 평생 학습능력
+
+## 학생부종합전형 평가요소 반영 (서술 시 아래 관점을 고려할 것)
+[학업역량] 폭넓은 지식을 깊이 있게 갖추고 활용할 수 있는 학생인가?
+- 교과 및 학업활동에서 우수한 역량이 고르게 나타나는가
+- 단순 암기 수준 이상의 깊이 있는 이해를 바탕으로 한 지식을 갖추었는가
+- 습득한 지식을 적절히 활용한 경험이 있는가
+- 노력을 통해 성장한 모습이 드러나는가
+
+[학업태도] 스스로 알고자 하며 적극적으로 배우고자 하는 학생인가?
+- 지식을 쌓기 위한 과정에서 적극적이며 지속적으로 노력하였는가
+- 스스로 알고자 하는 호기심과 도전적 태도가 나타나는가
+- 자기주도적으로 학습하였는가
+- 학교생활 전반에 적극적으로 참여하였는가
+
+[학업 외 소양] 바른 인성과 공동체 의식을 지니고 나눔을 실천할 수 있는 학생인가?
+- 학교생활을 통해 리더십을 발휘한 경험이 있는가
+- 공동체 의식을 지니고 있는가
+- 어려움을 극복한 경험이 드러나는가
+- 사회적 약자를 배려하고 도움을 주고자 하는 마음이 있는가
+
+※ 위 세 가지 평가요소가 메모에 근거하여 자연스럽게 드러나도록 서술하되,
+   모든 요소를 억지로 포함할 필요는 없음. 메모에 있는 내용만 반영할 것.
+
+## 역량 문장 예시 (참고)
+~로 제시하는 안목이 돋보임 / 남다른 관심과 이해의 수준을 보여주었음 / ~을 통해 볼 때 지식의 깊이를 가늠할 수 있었음 / 비판적 사고력과 문제해결력을 보임 / 과제 집착력이 돋보임 / ~라는 예리한 지적을 하였음 / 공동체 수업의 질을 끌어올린 점이 매우 인상적이었음 / 자신의 의견을 논리적으로 제시하여 큰 호응을 얻음
+
+## 작성 조건
+- 분량: 지정된 글자 수 ±20자
+- 문장 형식: 모든 문장은 '~함.'으로 마무리
+- 에피소드 중심으로 개별성이 드러나도록 서술
+- 역량 명칭을 직접 나열하지 않고 행동·결과로 풀어서 표현
+
+## 출력 형식
+[과목명] 교과세부능력 및 특기사항
+
+(세특 본문)
+
+📝 글자 수: OOO자
+💡 반영된 역량: OOO, OOO`,
+
+  ja: `당신은 고등학교 학교생활기록부 자율활동 특기사항 작성 전문가입니다.
+${BASE_RULES}
+
+## 메모 충분성 판단 (최우선)
+단어 1~3개 수준이거나 구체적 내용이 없으면 작성하지 않고 반드시 아래 형식으로만 응답:
+❓ 더 구체적인 내용이 필요해요
+
+작성된 메모만으로는 없는 내용을 추가하지 않고는 자율활동 특기사항을 쓸 수 없어요.
+아래 내용을 추가로 알려주시면 더 정확하게 작성할 수 있어요:
+1. [어떤 자율활동에 참여했는지 구체적 활동 질문]
+2. [학생이 맡은 역할이나 기여한 부분 질문]
+3. [활동을 통해 드러난 태도나 성장 질문]
+
+※ 메모의 내용만으로 작성을 원하시면 "현재 메모로 작성해줘"라고 입력해주세요.
+
+## 작성 포인트
+학급·학교 단위 자치 활동에서 드러난 자치능력, 리더십, 공동체 기여, 민주적 참여 태도를 중심으로 서술
+
+## 작성 조건
+- 분량: 지정된 글자 수 ±20자
+- 문장 형식: 모든 문장은 '~함.'으로 마무리
+- 활동 내용과 학생의 역할·태도가 구체적으로 드러나도록 서술
+- 역량 명칭을 직접 나열하지 않고 행동·결과로 풀어서 표현
+
+## 출력 형식
+자율활동 특기사항
+
+(본문)
+
+📝 글자 수: OOO자
+💡 반영된 역량: OOO, OOO`,
+
+  do: `당신은 고등학교 학교생활기록부 동아리활동 특기사항 작성 전문가입니다.
+${BASE_RULES}
+
+## 메모 충분성 판단 (최우선)
+단어 1~3개 수준이거나 구체적 내용이 없으면 작성하지 않고 반드시 아래 형식으로만 응답:
+❓ 더 구체적인 내용이 필요해요
+
+작성된 메모만으로는 없는 내용을 추가하지 않고는 동아리활동 특기사항을 쓸 수 없어요.
+아래 내용을 추가로 알려주시면 더 정확하게 작성할 수 있어요:
+1. [동아리 이름과 주요 활동 내용 질문]
+2. [학생이 맡은 역할이나 기여한 부분 질문]
+3. [활동을 통해 드러난 전문성이나 성장 질문]
+
+※ 메모의 내용만으로 작성을 원하시면 "현재 메모로 작성해줘"라고 입력해주세요.
+
+## 작성 포인트
+동아리 활동 내용, 학생의 역할, 전문성 향상 과정, 협력 과정, 성과를 중심으로 서술
+
+## 작성 조건
+- 분량: 지정된 글자 수 ±20자
+- 문장 형식: 모든 문장은 '~함.'으로 마무리
+- 활동 내용과 학생의 역할·성장이 구체적으로 드러나도록 서술
+- 역량 명칭을 직접 나열하지 않고 행동·결과로 풀어서 표현
+
+## 출력 형식
+동아리활동 특기사항
+
+(본문)
+
+📝 글자 수: OOO자
+💡 반영된 역량: OOO, OOO`,
+
+  ji: `당신은 고등학교 학교생활기록부 진로활동 특기사항 작성 전문가입니다.
+${BASE_RULES}
+
+## 메모 충분성 판단 (최우선)
+단어 1~3개 수준이거나 구체적 내용이 없으면 작성하지 않고 반드시 아래 형식으로만 응답:
+❓ 더 구체적인 내용이 필요해요
+
+작성된 메모만으로는 없는 내용을 추가하지 않고는 진로활동 특기사항을 쓸 수 없어요.
+아래 내용을 추가로 알려주시면 더 정확하게 작성할 수 있어요:
+1. [어떤 진로활동에 참여했는지 구체적 내용 질문]
+2. [활동을 통해 탐색한 직업·전공 관련 내용 질문]
+3. [활동 후 드러난 진로 목표나 계획 변화 질문]
+
+※ 메모의 내용만으로 작성을 원하시면 "현재 메모로 작성해줘"라고 입력해주세요.
+
+## 작성 포인트
+진로 탐색 과정, 직업·학과에 대한 이해, 미래 계획과의 연결, 자기주도적 탐색 노력을 중심으로 서술
+
+## 작성 조건
+- 분량: 지정된 글자 수 ±20자
+- 문장 형식: 모든 문장은 '~함.'으로 마무리
+- 진로 탐색 과정과 학생의 성찰이 드러나도록 서술
+- 역량 명칭을 직접 나열하지 않고 행동·결과로 풀어서 표현
+
+## 출력 형식
+진로활동 특기사항
+
+(본문)
+
+📝 글자 수: OOO자
+💡 반영된 역량: OOO, OOO`,
+
+  hb: `당신은 고등학교 학교생활기록부 행동특성 및 종합의견 작성 전문가입니다.
+${BASE_RULES}
+
+## 메모 충분성 판단 (최우선)
+단어 1~3개 수준이거나 구체적 내용이 없으면 작성하지 않고 반드시 아래 형식으로만 응답:
+❓ 더 구체적인 내용이 필요해요
+
+작성된 메모만으로는 없는 내용을 추가하지 않고는 행발을 쓸 수 없어요.
+아래 내용을 추가로 알려주시면 더 정확하게 작성할 수 있어요:
+1. [학교생활 전반에서 드러난 인성·태도 관련 질문]
+2. [공동체 활동에서 드러난 역할이나 기여 질문]
+3. [학업 외 특기할 만한 성장이나 변화 질문]
+
+※ 메모의 내용만으로 작성을 원하시면 "현재 메모로 작성해줘"라고 입력해주세요.
+
+## 작성 구조 (세 가지 균형 있게 반영)
+[학업역량] 학습태도, 지적호기심, 자기주도학습, 성취 노력
+[진로역량] 진로 탐색 의지, 목표 설정, 전공 관련 활동
+[공동체역량] 인성, 리더십, 배려·나눔, 책임감, 협력
+
+## 작성 조건
+- 분량: 지정된 글자 수 ±20자
+- 문장 형식: 모든 문장은 '~함.'으로 마무리
+- 학생의 전반적 특성이 균형 있게 드러나도록 서술
+- 구체적 에피소드나 행동을 근거로 서술
+- 역량 명칭을 직접 나열하지 않고 행동·결과로 풀어서 표현
+
+## 출력 형식
+행동특성 및 종합의견
+
+(본문)
+
+📝 글자 수: OOO자
+💡 반영된 역량: OOO, OOO`
+};
+
+/* ────────────────────────────────
+   상태
+──────────────────────────────── */
+let currentTab = 'se';
+let state = { result:'', lastMsg:'', pendingMods:{} };
+let students = [];
+let currentStudent = null;
+
+/* ────────────────────────────────
+   탭 UI 동적 생성
+──────────────────────────────── */
+function buildUI() {
+  const tabBar = document.getElementById('tab-bar');
+  const panels = document.getElementById('panels');
+
+  TABS.forEach((t, idx) => {
+    // 탭 버튼
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (idx===0?' active':'');
+    btn.textContent = t.label;
+    btn.style.background = idx===0 ? t.color : '';
+    btn.onclick = () => switchTab(t.id);
+    btn.id = 'tab-btn-'+t.id;
+    tabBar.appendChild(btn);
+
+    // 패널 HTML
+    let panelInner = '';
+
+    if (t.seLayout) {
+      // 세특 전용 5개 입력 필드
+      panelInner = `
+        <div style="margin-bottom:1rem">
+          <label for="se-subject">과목명</label>
+          <input id="se-subject" type="text" placeholder="예) 국어, 수학, 생명과학Ⅱ, 한국사..."/>
+        </div>
+        <div style="margin-bottom:1rem">
+          <label for="se-unit">단원 / 성취기준 <span style="font-weight:400;color:#aaa">(선택)</span></label>
+          <input id="se-unit" type="text" placeholder="예) 3단원 이차함수 / [10수학01-03]"/>
+        </div>
+        <div style="margin-bottom:1rem;background:#f0fdf8;border-radius:10px;padding:12px 14px;border:1px solid #c8eadf">
+          <label for="se-activity" style="font-weight:700;color:#1d9e75">수업 활동 내용 <span style="font-weight:400;color:#aaa">(이 수업에서 모든 학생이 한 활동)</span></label>
+          <textarea id="se-activity" style="height:90px" placeholder="예) 모둠별 충돌 안전장치 설계 및 발표 활동&#10;예) 이차방정식 풀이 방법 비교 탐구 활동"></textarea>
+        </div>
+        <div style="margin-bottom:1.25rem">
+          <label for="se-memo">학생 특이사항 (관찰 내용) <span style="font-weight:400;color:#aaa">(이 학생에게 특별히 관찰된 내용)</span></label>
+          <textarea id="se-memo" style="height:110px" placeholder="예) 모둠 리더 역할, 오차 원인을 창의적으로 분석, 다른 모둠에 질문 가장 많이 함&#10;예) 이차방정식 판별식을 활용해 새로운 풀이법 제시, 수업 후 선생님께 심화 질문"></textarea>
+        </div>
+        <div style="margin-bottom:1.25rem">
+          <label>목표 글자 수: <strong id="se-chars-display" style="color:#1d9e75">200자</strong></label>
+          <input type="range" id="se-chars" min="100" max="500" step="50" value="200" style="accent-color:#1d9e75"
+            oninput="document.getElementById('se-chars-display').textContent=this.value+'자'"/>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#aaa;margin-top:2px">
+            <span>100자</span><span>200자</span><span>300자</span><span>400자</span><span>500자</span>
+          </div>
+        </div>`;
+    } else {
+      // 일반 탭 입력 필드
+      panelInner = `
+        <div style="margin-bottom:1.25rem">
+          <label>목표 글자 수: <strong id="${t.id}-chars-display" style="color:${t.color}">200자</strong></label>
+          <input type="range" id="${t.id}-chars" min="100" max="500" step="50" value="200" style="accent-color:${t.color}"
+            oninput="document.getElementById('${t.id}-chars-display').textContent=this.value+'자'"/>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#aaa;margin-top:2px">
+            <span>100자</span><span>200자</span><span>300자</span><span>400자</span><span>500자</span>
+          </div>
+        </div>
+        <div style="margin-bottom:1rem">
+          <label for="${t.id}-memo">관찰 메모</label>
+          <textarea id="${t.id}-memo" style="height:150px" placeholder="${t.placeholder}"></textarea>
+        </div>`;
+    }
+
+    panels.innerHTML += `
+    <div class="tab-panel ${idx===0?'active':''}" id="panel-${t.id}">
+      <div class="card">
+        ${panelInner}
+        <div id="${t.id}-err" class="err-msg"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-primary" id="${t.id}-gen-btn" onclick="generate('${t.id}')"
+            style="flex:1;background:${t.color}">✦ ${LABELS[t.id]} 생성하기</button>
+          <button class="btn-danger" onclick="resetForm('${t.id}')"
+            style="padding:13px 20px;border-radius:10px;white-space:nowrap">↺ 초기화</button>
+        </div>
+      </div>
+    </div>`;
+  });
+}
+buildUI();
+
+/* ────────────────────────────────
+   탭 전환
+──────────────────────────────── */
+function switchTab(id) {
+  currentTab = id;
+  const tc = TABS.find(t=>t.id===id).color;
+  TABS.forEach(t => {
+    const btn = document.getElementById('tab-btn-'+t.id);
+    const active = t.id === id;
+    btn.classList.toggle('active', active);
+    btn.style.background = active ? t.color : '';
+    document.getElementById('panel-'+t.id).classList.toggle('active', active);
+  });
+  document.getElementById('result-wrap').style.display='none';
+  document.getElementById('spinner').style.borderTopColor = tc;
+  document.getElementById('spinner').style.borderColor = tc+'33';
+  ['chars-modal','comp-modal','ep-modal'].forEach(mid=>{
+    document.getElementById(mid).style.display='none';
+  });
+  // 수정 상태 초기화
+  state.pendingMods = {};
+  updateApplyBtn();
+  state.result='';
+}
+
+/* ────────────────────────────────
+   학생 명단
+──────────────────────────────── */
+function addStudents() {
+  const raw = document.getElementById('names-input').value;
+  if (!raw.trim()) return;
+  raw.split(/[\n,，]+/).map(s=>s.trim()).filter(Boolean).forEach(name=>{
+    if (!students.find(s=>s.name===name))
+      students.push({ name, se:null, ja:null, do:null, ji:null, hb:null });
+  });
+  document.getElementById('names-input').value='';
+  renderList();
+}
+
+function renderList() {
+  const list = document.getElementById('stu-list');
+  const has = students.length>0;
+  list.style.display = has?'flex':'none';
+  document.getElementById('no-stu').style.display = has?'none':'block';
+  ['dl-txt','dl-csv','clear-all'].forEach(id=>{
+    document.getElementById(id).style.display=has?'':'none';
+  });
+  const colors = {se:'#1d9e75',ja:'#6366f1',do:'#ec4899',ji:'#f59e0b',hb:'#ef4444'};
+  list.innerHTML = students.map((s,i)=>{
+    const badges = ['se','ja','do','ji','hb'].filter(t=>s[t])
+      .map(t=>`<span class="badge" style="background:${colors[t]}">${LABELS[t]}</span>`).join('');
+    return `<div class="stu-item ${currentStudent===i?'active':''}" onclick="selectStudent(${i})">
+      <span>${s.name}</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <div class="badges">${badges}</div>
+        <button onclick="removeStudent(event,${i})" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:18px;line-height:1;padding:0 2px">×</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectStudent(i) {
+  currentStudent=i;
+  document.getElementById('stu-select-notice').style.display = 'none';
+  document.getElementById('sel-bar').style.display='block';
+  document.getElementById('sel-name').textContent=students[i].name;
+  renderList();
+  if (document.getElementById('result-wrap').style.display!=='none') refreshSaveBar();
+}
+
+function removeStudent(e,i) {
+  e.stopPropagation();
+  if (currentStudent===i){
+    currentStudent=null;
+    document.getElementById('sel-bar').style.display='none';
+    if (students.length > 1) document.getElementById('stu-select-notice').style.display='block';
+  }
+  else if (currentStudent>i) currentStudent--;
+  students.splice(i,1);
+  if (students.length === 0) document.getElementById('stu-select-notice').style.display='none';
+  renderList();
+}
+
+function refreshSaveBar() {
+  const bar = document.getElementById('save-bar');
+  const isQ = document.getElementById('result-card').classList.contains('q-card');
+  if (currentStudent!==null && !isQ) {
+    bar.style.display='flex';
+    document.getElementById('save-bar-msg').textContent=
+      `${students[currentStudent].name} 학생의 ${LABELS[currentTab]}으로 저장할 수 있어요.`;
+  } else {
+    bar.style.display='none';
+  }
+}
+
+function saveToStudent() {
+  if (currentStudent===null) return;
+  students[currentStudent][currentTab]=document.getElementById('result-text').textContent;
+  renderList();
+  const btn=document.getElementById('save-btn');
+  btn.textContent='✓ 저장됨';
+  setTimeout(()=>{ btn.textContent='이 학생에 저장'; },2000);
+}
+
+/* ────────────────────────────────
+   다운로드
+──────────────────────────────── */
+function buildTxt() {
+  const keys=['se','ja','do','ji','hb'];
+  const names={se:'세특',ja:'자율활동',do:'동아리활동',ji:'진로활동',hb:'행발'};
+  return students.filter(s=>keys.some(k=>s[k])).map(s=>{
+    const parts=keys.filter(k=>s[k]).map(k=>`[${names[k]}]\n${s[k]}`);
+    return `【${s.name}】\n${'─'.repeat(40)}\n${parts.join('\n\n')}`;
+  }).join('\n\n'+'═'.repeat(40)+'\n\n');
+}
+
+function buildCsv() {
+  const esc=v=>'"'+(v||'').replace(/"/g,'""')+'"';
+  const rows=['학생명,세특,자율활동,동아리활동,진로활동,행발'];
+  students.filter(s=>['se','ja','do','ji','hb'].some(k=>s[k])).forEach(s=>{
+    rows.push(`"${s.name}",${esc(s.se)},${esc(s.ja)},${esc(s.do)},${esc(s.ji)},${esc(s.hb)}`);
+  });
+  return '\uFEFF'+rows.join('\n');
+}
+
+function downloadAll(type) {
+  const saved=students.filter(s=>['se','ja','do','ji','hb'].some(k=>s[k]));
+  if (!saved.length){ alert('저장된 내용이 없습니다.\n\n순서: 학생 선택 → 생성 → "이 학생에 저장" 클릭'); return; }
+  const content=type==='csv'?buildCsv():buildTxt();
+  const filename=type==='csv'?'학생부_전체.csv':'학생부_전체.txt';
+  const mime=type==='csv'?'text/csv':'text/plain';
+  try {
+    const blob=new Blob([content],{type:mime+';charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),1000); return;
+  } catch(e){}
+  document.getElementById('dl-modal-title').textContent=`📋 ${filename} — 아래 내용을 복사해서 저장하세요`;
+  document.getElementById('dl-content').value=content;
+  const modal=document.getElementById('dl-modal');
+  modal.style.display='block';
+  modal.scrollIntoView({behavior:'smooth'});
+  document.getElementById('dl-content').select();
+}
+
+function clearAll() {
+  if (!confirm('학생 명단과 저장된 내용을 모두 삭제할까요?')) return;
+  students=[]; currentStudent=null;
+  document.getElementById('dl-modal').style.display='none';
+  document.getElementById('sel-bar').style.display='none';
+  document.getElementById('stu-select-notice').style.display='none';
+  renderList();
+  TABS.forEach(t=>resetForm(t.id));
+}
+
+/* ────────────────────────────────
+   폼 초기화
+──────────────────────────────── */
+function resetForm(id) {
+  if (id === 'se') {
+    ['se-subject','se-unit','se-activity','se-memo'].forEach(fid=>{
+      const el=document.getElementById(fid);
+      if(el) el.value='';
+    });
+    const slider=document.getElementById('se-chars');
+    if(slider){ slider.value=200; document.getElementById('se-chars-display').textContent='200자'; }
+  } else {
+    const memo=document.getElementById(id+'-memo');
+    if(memo) memo.value='';
+    const slider=document.getElementById(id+'-chars');
+    if(slider){ slider.value=200; document.getElementById(id+'-chars-display').textContent='200자'; }
+  }
+  const err=document.getElementById(id+'-err');
+  if(err) err.style.display='none';
+  if(id===currentTab){
+    document.getElementById('result-wrap').style.display='none';
+    state.result='';
+    state.pendingMods={};
+    updateApplyBtn();
+    ['chars-modal','comp-modal','ep-modal'].forEach(mid=>{
+      document.getElementById(mid).style.display='none';
+    });
+  }
+}
+
+/* ────────────────────────────────
+   입력 메시지 빌드
+──────────────────────────────── */
+function buildUserMsg() {
+  const chars = document.getElementById(currentTab+'-chars').value;
+
+  if (currentTab === 'se') {
+    const subject  = document.getElementById('se-subject').value.trim();
+    const unit     = document.getElementById('se-unit').value.trim();
+    const activity = document.getElementById('se-activity').value.trim();
+    const memo     = document.getElementById('se-memo').value.trim();
+    let msg = `과목: ${subject || '미입력'}\n`;
+    if (unit)     msg += `단원/성취기준: ${unit}\n`;
+    if (activity) msg += `수업 활동 내용: ${activity}\n`;
+    msg += `학생 특이사항: ${memo}\n목표 글자 수: ${chars}자`;
+    return msg;
+  }
+
+  const memo = document.getElementById(currentTab+'-memo').value.trim();
+  return `목표 글자 수: ${chars}자\n관찰 메모: ${memo}`;
+}
+
+/* ────────────────────────────────
+   API 호출 (OpenRouter / OpenAI 형식)
+──────────────────────────────── */
+async function callAPI(messages, model) {
+  let res;
+  try {
+    res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: model,
+        max_tokens: 1500,
+        messages: [
+          { role: 'system', content: PROMPTS[currentTab] },
+          ...messages
+        ]
+      })
+    });
+  } catch(networkErr) {
+    throw new Error('네트워크 오류: ' + networkErr.message);
+  }
+
+  let data;
+  try { data = await res.json(); }
+  catch(e) { throw new Error('응답 파싱 오류 (status: ' + res.status + ')'); }
+
+  if (!res.ok || data.error) {
+    const msg = data.error ? data.error.message : 'HTTP ' + res.status;
+    throw new Error('API 오류: ' + msg);
+  }
+  if (!data.choices || !data.choices[0]) {
+    throw new Error('응답 형식 오류');
+  }
+  return data.choices[0].message.content;
+}
+
+/* ────────────────────────────────
+   생성 (Haiku - 초안)
+──────────────────────────────── */
+async function generate(id) {
+  currentTab = id;
+  const errEl = document.getElementById(id+'-err');
+  errEl.style.display = 'none';
+
+  // 입력값 검증
+  let empty = false;
+  if (id === 'se') {
+    const activity = document.getElementById('se-activity').value.trim();
+    const memo     = document.getElementById('se-memo').value.trim();
+    empty = !activity && !memo;
+  } else {
+    empty = !document.getElementById(id+'-memo').value.trim();
+  }
+  if (empty) {
+    errEl.textContent = id==='se'
+      ? '수업 활동 내용 또는 학생 특이사항을 입력해 주세요.'
+      : '관찰 메모를 입력해 주세요.';
+    errEl.style.display='block';
+    return;
+  }
+
+  state.lastMsg = buildUserMsg();
+  state.result  = '';
+  state.pendingMods = {};
+  updateApplyBtn();
+  setLoading(true, id);
+
+  try {
+    showResult(
+      await callAPI([{ role:'user', content:state.lastMsg }], MODELS.haiku),
+      MODELS.haiku
+    );
+  } catch(e) {
+    errEl.textContent = '⚠️ ' + e.message;
+    errEl.style.display = 'block';
+  }
+  setLoading(false, id);
+}
+
+/* ────────────────────────────────
+   수정 후속 호출 (Sonnet - 고품질)
+──────────────────────────────── */
+async function followUp(msg) {
+  setLoading(true, currentTab);
+  ['chars-modal','comp-modal','ep-modal'].forEach(id=>{
+    document.getElementById(id).style.display='none';
+  });
+  try {
+    showResult(
+      await callAPI([
+        { role:'user',      content:state.lastMsg },
+        { role:'assistant', content:state.result  },
+        { role:'user',      content:msg           }
+      ], MODELS.sonnet),
+      MODELS.sonnet
+    );
+  } catch(e) {
+    const errEl = document.getElementById(currentTab+'-err');
+    errEl.textContent='⚠️ ' + e.message;
+    errEl.style.display='block';
+  }
+  setLoading(false, currentTab);
+}
+
+function reGenerate() {
+  followUp('처음부터 다시 작성해줘. 메모에 없는 내용은 추가하지 마.');
+}
+
+/* ────────────────────────────────
+   수정사항 모아서 1회 호출
+──────────────────────────────── */
+function onAdjCharsChange(val) {
+  document.getElementById('adj-chars-display').textContent = val+'자';
+  state.pendingMods.chars = val;
+  updateApplyBtn();
+}
+
+function toggleCompTag(btn) {
+  btn.classList.toggle('selected');
+  const selected = Array.from(document.querySelectorAll('#comp-modal .tag-btn.selected'))
+    .map(b => b.textContent);
+  if (selected.length > 0) {
+    state.pendingMods.comps = selected;
+  } else {
+    delete state.pendingMods.comps;
+  }
+  updateApplyBtn();
+}
+
+function onEpisodeChange(val) {
+  if (val.trim()) {
+    state.pendingMods.episode = val.trim();
+  } else {
+    delete state.pendingMods.episode;
+  }
+  updateApplyBtn();
+}
+
+function updateApplyBtn() {
+  const has = Object.keys(state.pendingMods).length > 0;
+  document.getElementById('apply-btn').style.display = has ? 'block' : 'none';
+}
+
+function buildApplyMessage() {
+  const parts = [];
+  if (state.pendingMods.chars) {
+    parts.push(`${state.pendingMods.chars}자로 분량을 조정해줘.`);
+  }
+  if (state.pendingMods.comps && state.pendingMods.comps.length > 0) {
+    parts.push(`${state.pendingMods.comps.join(', ')}을(를) 더 부각해줘.`);
+  }
+  if (state.pendingMods.episode) {
+    parts.push(`다음 내용도 반영해줘: ${state.pendingMods.episode}`);
+  }
+  return parts.join(' ') + ' 단, 메모에 없는 내용은 추가하지 마.';
+}
+
+function applyMods() {
+  const msg = buildApplyMessage();
+  // 선택 상태 초기화
+  document.querySelectorAll('#comp-modal .tag-btn.selected').forEach(btn=>{
+    btn.classList.remove('selected');
+  });
+  document.getElementById('ep-input').value = '';
+  state.pendingMods = {};
+  updateApplyBtn();
+  followUp(msg);
+}
+
+/* ────────────────────────────────
+   결과 표시
+──────────────────────────────── */
+function showResult(text, model) {
+  state.result = text;
+  const isQ = text.trim().startsWith('❓');
+  const tc = TABS.find(t=>t.id===currentTab).color;
+  const card = document.getElementById('result-card');
+
+  // 모델 뱃지
+  const modelBadge = document.getElementById('model-badge');
+  if (model === MODELS.haiku) {
+    modelBadge.textContent = 'Haiku · 초안';
+    modelBadge.style.background = '#e8f5e9'; modelBadge.style.color = '#2e7d32';
+  } else {
+    modelBadge.textContent = 'Sonnet · 수정본';
+    modelBadge.style.background = '#e3f2fd'; modelBadge.style.color = '#1565c0';
+  }
+
+  if (isQ) {
+    document.getElementById('result-label').textContent='추가 정보 필요';
+    document.getElementById('char-display').textContent='';
+    document.getElementById('result-text').textContent=text.trim();
+    document.getElementById('competencies').textContent='';
+    document.getElementById('copy-btn').style.display='none';
+    card.className='result-card q-card';
+    document.getElementById('opts-sec').style.display='none';
+    document.getElementById('save-bar').style.display='none';
+    document.getElementById('apply-btn').style.display='none';
+  } else {
+    document.getElementById('result-text').textContent=text.split('📝')[0].trim();
+    const titles={
+      se:`[${(document.getElementById('se-subject')||{}).value||'과목'}] 교과세부능력 및 특기사항`,
+      ja:'자율활동 특기사항', do:'동아리활동 특기사항',
+      ji:'진로활동 특기사항', hb:'행동특성 및 종합의견'
+    };
+    document.getElementById('result-label').textContent=titles[currentTab];
+    const cm=text.match(/📝\s*글자\s*수[:\s]+(\d+)/);
+    const badge=document.getElementById('char-display');
+    badge.textContent=cm?`📝 ${cm[1]}자`:'';
+    badge.style.background=tc+'22'; badge.style.color=tc;
+    const comp=text.match(/💡\s*반영된\s*역량[:\s]+([^\n]+)/);
+    document.getElementById('competencies').textContent=comp?`💡 반영된 역량: ${comp[1].trim()}`:'';
+    document.getElementById('copy-btn').style.display='';
+    card.className='result-card';
+    document.getElementById('opts-sec').style.display='';
+  }
+  document.getElementById('result-wrap').style.display='block';
+  if (!isQ) refreshSaveBar();
+  document.getElementById('result-wrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ────────────────────────────────
+   로딩
+──────────────────────────────── */
+function setLoading(on, id) {
+  document.getElementById('loading').style.display=on?'block':'none';
+  document.getElementById('loading-msg').textContent=`${LABELS[id]}을(를) 작성하고 있습니다...`;
+  document.getElementById(id+'-gen-btn').disabled=on;
+  if (on) document.getElementById('result-wrap').style.display='none';
+}
+
+/* ────────────────────────────────
+   서브 모달 토글
+──────────────────────────────── */
+function toggleSub(id) {
+  ['chars-modal','comp-modal','ep-modal'].forEach(mid=>{
+    document.getElementById(mid).style.display=
+      (mid===id && document.getElementById(mid).style.display==='none')?'block':'none';
+  });
+}
+
+/* ────────────────────────────────
+   복사
+──────────────────────────────── */
+function copyResult(btn) {
+  navigator.clipboard.writeText(document.getElementById('result-text').textContent).then(()=>{
+    btn.textContent='✓ 복사됨';
+    setTimeout(()=>{ btn.textContent='복사'; },2000);
+  });
+}
+</script>
+</body>
+</html>
