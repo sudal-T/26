@@ -144,6 +144,13 @@ input[type=range]{width:100%;accent-color:var(--tc,#1d9e75);cursor:pointer;heigh
       <button class="btn-secondary" id="save-btn" onclick="saveToStudent()">이 학생에 저장</button>
     </div>
 
+    <div id="write-anyway-wrap" style="display:none;margin-bottom:1rem">
+      <button id="write-anyway-btn" onclick="followUp('현재 메모로 작성해줘')"
+        style="width:100%;padding:13px;border-radius:10px;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer">
+        ✍️ 내용이 부족하지만 바로 작성하기
+      </button>
+    </div>
+
     <div class="opts-sec" id="opts-sec">
       <p class="opts-title">수정 옵션</p>
       <div class="opts-grid">
@@ -204,7 +211,7 @@ const WORKER_URL = '/api/generate';
 
 const MODELS = {
   haiku:  'anthropic/claude-haiku-4-5',   // 초안 생성 (빠르고 저렴)
-  sonnet: 'anthropic/claude-haiku-4-5',  // 수정/재작성
+  sonnet: 'anthropic/claude-sonnet-4-6',  // 수정/재작성 (고품질)
 };
 
 /* ────────────────────────────────
@@ -492,12 +499,12 @@ function buildUI() {
           <label for="se-unit">단원 / 성취기준 <span style="font-weight:400;color:#aaa">(선택)</span></label>
           <input id="se-unit" type="text" placeholder="예) 3단원 이차함수 / [10수학01-03]"/>
         </div>
-        <div style="margin-bottom:1rem;background:#f0fdf8;border-radius:10px;padding:12px 14px;border:1px solid #c8eadf">
-          <label for="se-activity" style="font-weight:700;color:#1d9e75">수업 활동 내용 <span style="font-weight:400;color:#aaa">(이 수업에서 모든 학생이 한 활동)</span></label>
+        <div style="margin-bottom:1rem">
+          <label for="se-activity">수업 활동 내용 <span style="font-weight:400;color:#aaa">(이 수업에서 모든 학생이 한 활동)</span></label>
           <textarea id="se-activity" style="height:90px" placeholder="예) 모둠별 충돌 안전장치 설계 및 발표 활동&#10;예) 이차방정식 풀이 방법 비교 탐구 활동"></textarea>
         </div>
-        <div style="margin-bottom:1.25rem">
-          <label for="se-memo">학생 특이사항 (관찰 내용) <span style="font-weight:400;color:#aaa">(이 학생에게 특별히 관찰된 내용)</span></label>
+        <div style="margin-bottom:1.25rem;background:#f0fdf8;border-radius:10px;padding:12px 14px;border:1px solid #c8eadf">
+          <label for="se-memo" style="font-weight:700;color:#1d9e75">학생 특이사항 (관찰 내용) <span style="font-weight:400;color:#aaa">(이 학생에게 특별히 관찰된 내용)</span></label>
           <textarea id="se-memo" style="height:110px" placeholder="예) 모둠 리더 역할, 오차 원인을 창의적으로 분석, 다른 모둠에 질문 가장 많이 함&#10;예) 이차방정식 판별식을 활용해 새로운 풀이법 제시, 수업 후 선생님께 심화 질문"></textarea>
         </div>
         <div style="margin-bottom:1.25rem">
@@ -754,7 +761,8 @@ function buildUserMsg() {
 /* ────────────────────────────────
    API 호출 (OpenRouter / OpenAI 형식)
 ──────────────────────────────── */
-async function callAPI(messages, model) {
+async function callAPI(messages, model, systemPrompt) {
+  const sysContent = systemPrompt !== undefined ? systemPrompt : PROMPTS[currentTab];
   let res;
   try {
     res = await fetch(WORKER_URL, {
@@ -764,7 +772,7 @@ async function callAPI(messages, model) {
         model: model,
         max_tokens: 1500,
         messages: [
-          { role: 'system', content: PROMPTS[currentTab] },
+          { role: 'system', content: sysContent },
           ...messages
         ]
       })
@@ -831,21 +839,27 @@ async function generate(id) {
 }
 
 /* ────────────────────────────────
-   수정 후속 호출 (Sonnet - 고품질)
+   수정 후속 호출 (Haiku - 경량 프롬프트)
 ──────────────────────────────── */
+const MOD_SYSTEM = `학생부 특기사항 수정 전문가입니다.
+- 주어진 텍스트를 요청에 맞게 수정
+- 모든 문장은 '~함.'으로 마무리
+- 입력된 내용에 없는 사실은 추가하지 않음
+- 수정된 결과만 출력 (설명·제목 없이)
+- 글자 수 지정 시 ±20자 이내로 맞출 것`;
+
 async function followUp(msg) {
   setLoading(true, currentTab);
   ['chars-modal','comp-modal','ep-modal'].forEach(id=>{
     document.getElementById(id).style.display='none';
   });
   try {
+    const userMsg = `현재 작성된 내용:\n${state.result}\n\n요청: ${msg}`;
     showResult(
       await callAPI([
-        { role:'user',      content:state.lastMsg },
-        { role:'assistant', content:state.result  },
-        { role:'user',      content:msg           }
-      ], MODELS.sonnet),
-      MODELS.sonnet
+        { role:'user', content:userMsg }
+      ], MODELS.haiku, MOD_SYSTEM),
+      MODELS.haiku
     );
   } catch(e) {
     const errEl = document.getElementById(currentTab+'-err');
@@ -949,7 +963,11 @@ function showResult(text, model) {
     document.getElementById('opts-sec').style.display='none';
     document.getElementById('save-bar').style.display='none';
     document.getElementById('apply-btn').style.display='none';
+    const writeWrap = document.getElementById('write-anyway-wrap');
+    writeWrap.style.display = 'block';
+    document.getElementById('write-anyway-btn').style.background = tc;
   } else {
+    document.getElementById('write-anyway-wrap').style.display = 'none';
     document.getElementById('result-text').textContent=text.split('📝')[0].trim();
     const titles={
       se:`[${(document.getElementById('se-subject')||{}).value||'과목'}] 교과세부능력 및 특기사항`,
