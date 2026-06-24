@@ -72,6 +72,9 @@ input[type=range]{width:100%;accent-color:var(--tc,#1d9e75);cursor:pointer;heigh
 .dl-modal textarea{height:180px;font-size:12px;background:#fff;font-family:'Courier New',monospace}
 .model-badge{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:500;background:#e8f5e9;color:#2e7d32;margin-left:6px}
 .w-card{background:#fffbeb;border:1.5px solid #fde68a}
+/* 로그아웃 버튼 */
+.logout-btn{font-size:11px;color:#bbb;background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:4px;font-family:inherit}
+.logout-btn:hover{color:#888;background:#eee}
 @media(max-width:520px){.tabs{flex-wrap:wrap}.tab-btn{flex:calc(33% - 4px)}.opts-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -202,17 +205,35 @@ input[type=range]{width:100%;accent-color:var(--tc,#1d9e75);cursor:pointer;heigh
   </div>
 </div>
 
-<div style="text-align:center;padding:2rem 1rem 1rem;font-size:12px;color:#bbb;">Made by <strong style="color:#888">수달샘</strong> &middot; Powered by Claude</div>
+<div style="text-align:center;padding:2rem 1rem 1rem;font-size:12px;color:#bbb;">
+  Made by <strong style="color:#888">수달샘</strong> &middot; Powered by Claude
+  &nbsp;·&nbsp;
+  <button class="logout-btn" onclick="logout()">로그아웃</button>
+</div>
 
 <script>
 /* ────────────────────────────────
-   설정값 (배포 전 수정 필요)
+   인증 체크 — 미인증 시 로그인 페이지로
+──────────────────────────────── */
+(function checkAuth() {
+  if (!localStorage.getItem('hb_auth')) {
+    location.href = '/login.html';
+  }
+})();
+
+function logout() {
+  localStorage.removeItem('hb_auth');
+  location.href = '/login.html';
+}
+
+/* ────────────────────────────────
+   설정값
 ──────────────────────────────── */
 const WORKER_URL = '/api/generate';
 
 const MODELS = {
-  haiku:  'anthropic/claude-haiku-4-5',   // 초안 생성 (빠르고 저렴)
-  sonnet: 'anthropic/claude-sonnet-4-6',  // 수정/재작성 (고품질)
+  haiku:  'anthropic/claude-haiku-4-5',
+  sonnet: 'anthropic/claude-sonnet-4-6',
 };
 
 /* ────────────────────────────────
@@ -251,7 +272,7 @@ const BASE_RULES = `
 ~활동지를 작성함 / ~활동에 참여함 / ~모습을 보임 / ~었음 / ~였음
 "최고", "완벽한", "탁월한", "뛰어난" 등 과장 표현 금지 / 학생 간 비교 표현 금지
 
-## 언어 사용 원칙
+## 언어 사용 원칙 (교육부 기재요령 준수)
 - 결과물은 반드시 한글로 작성 (숫자는 아라비아 숫자)
 - 교사 메모에 영어·외국어가 있어도 결과물에는 한글로 변환
 - 단, CEO, PD, IT, TV, SNS, PPT 등 통용 약어는 예외 허용
@@ -519,7 +540,6 @@ function buildUI() {
   const panels = document.getElementById('panels');
 
   TABS.forEach((t, idx) => {
-    // 탭 버튼
     const btn = document.createElement('button');
     btn.className = 'tab-btn' + (idx===0?' active':'');
     btn.textContent = t.label;
@@ -528,11 +548,9 @@ function buildUI() {
     btn.id = 'tab-btn-'+t.id;
     tabBar.appendChild(btn);
 
-    // 패널 HTML
     let panelInner = '';
 
     if (t.seLayout) {
-      // 세특 전용 5개 입력 필드
       panelInner = `
         <div style="margin-bottom:1rem">
           <label for="se-subject">과목명</label>
@@ -559,7 +577,6 @@ function buildUI() {
           </div>
         </div>`;
     } else {
-      // 일반 탭 입력 필드
       panelInner = `
         <div style="margin-bottom:1.25rem">
           <label>목표 글자 수: <strong id="${t.id}-chars-display" style="color:${t.color}">200자</strong></label>
@@ -611,7 +628,6 @@ function switchTab(id) {
   ['chars-modal','comp-modal','ep-modal'].forEach(mid=>{
     document.getElementById(mid).style.display='none';
   });
-  // 수정 상태 초기화
   state.pendingMods = {};
   updateApplyBtn();
   state.result='';
@@ -802,15 +818,19 @@ function buildUserMsg() {
 }
 
 /* ────────────────────────────────
-   API 호출 (OpenRouter / OpenAI 형식)
+   API 호출 — X-Access-Code 헤더 포함
 ──────────────────────────────── */
 async function callAPI(messages, model, systemPrompt) {
+  const authCode = localStorage.getItem('hb_auth') || '';
   const sysContent = systemPrompt !== undefined ? systemPrompt : PROMPTS[currentTab];
   let res;
   try {
     res = await fetch(WORKER_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Access-Code': authCode
+      },
       body: JSON.stringify({
         model: model,
         max_tokens: 1500,
@@ -822,6 +842,14 @@ async function callAPI(messages, model, systemPrompt) {
     });
   } catch(networkErr) {
     throw new Error('네트워크 오류: ' + networkErr.message);
+  }
+
+  /* 인증 만료 시 로그인 페이지로 */
+  if (res.status === 401) {
+    localStorage.removeItem('hb_auth');
+    alert('접근 코드가 만료되었습니다. 다시 로그인해 주세요.');
+    location.href = '/login.html';
+    return;
   }
 
   let data;
@@ -846,7 +874,6 @@ async function generate(id) {
   const errEl = document.getElementById(id+'-err');
   errEl.style.display = 'none';
 
-  // 입력값 검증
   let empty = false;
   if (id === 'se') {
     const activity = document.getElementById('se-activity').value.trim();
@@ -882,7 +909,7 @@ async function generate(id) {
 }
 
 /* ────────────────────────────────
-   수정 후속 호출 (Haiku - 경량 프롬프트)
+   수정 후속 호출
 ──────────────────────────────── */
 const MOD_SYSTEM = `학생부 특기사항 수정 전문가입니다.
 - 주어진 텍스트를 요청에 맞게 수정
@@ -917,7 +944,7 @@ function reGenerate() {
 }
 
 /* ────────────────────────────────
-   있는 내용으로 바로 작성 (원본 메모 컨텍스트 포함)
+   있는 내용으로 바로 작성
 ──────────────────────────────── */
 async function writeAnyway() {
   setLoading(true, currentTab);
@@ -990,7 +1017,6 @@ function buildApplyMessage() {
 
 function applyMods() {
   const msg = buildApplyMessage();
-  // 선택 상태 초기화
   document.querySelectorAll('#comp-modal .tag-btn.selected').forEach(btn=>{
     btn.classList.remove('selected');
   });
@@ -1010,7 +1036,6 @@ function showResult(text, model) {
   const tc = TABS.find(t=>t.id===currentTab).color;
   const card = document.getElementById('result-card');
 
-  // 모델 뱃지
   const modelBadge = document.getElementById('model-badge');
   if (model === MODELS.haiku) {
     modelBadge.textContent = 'Haiku · 초안';
