@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>학생부 작성 도우미 · 로그인</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#f5f4f0;color:#1a1a1a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+
+.login-box{background:#fff;border-radius:20px;border:1px solid #e8e6e0;padding:2.5rem 2rem;max-width:380px;width:100%;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.06)}
+
+.tag{font-size:11px;letter-spacing:.1em;color:#0f6e56;text-transform:uppercase;font-weight:500;margin-bottom:6px}
+h1{font-size:22px;font-weight:600;color:#0a0a0a;margin-bottom:6px}
+.sub{font-size:13px;color:#aaa;margin-bottom:2rem;line-height:1.6}
+
+.lock-icon{font-size:36px;margin-bottom:1.25rem}
+
+input[type=password]{
+  width:100%;padding:13px;border-radius:10px;
+  border:1.5px solid #d8d6d0;font-size:18px;
+  font-family:inherit;background:#fafaf8;outline:none;
+  text-align:center;letter-spacing:.25em;
+  margin-bottom:10px;transition:border .15s;
+}
+input[type=password]:focus{border-color:#1d9e75;background:#fff}
+input[type=password]::placeholder{letter-spacing:.05em;font-size:14px;color:#ccc}
+
+.err-msg{
+  display:none;font-size:13px;color:#c00;
+  margin-bottom:10px;padding:8px 12px;
+  background:#fff5f5;border-radius:8px;
+  border:1px solid #fdd;
+}
+
+.btn{
+  width:100%;padding:13px;font-size:15px;font-weight:600;
+  color:#fff;border:none;border-radius:10px;cursor:pointer;
+  background:#1d9e75;font-family:inherit;transition:opacity .15s;
+}
+.btn:hover{opacity:.88}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.footer{font-size:11px;color:#ccc;margin-top:2rem}
+.footer strong{color:#aaa}
+</style>
+</head>
+<body>
+<div class="login-box">
+  <div class="lock-icon">🔐</div>
+  <p class="tag">고등학교 학생부</p>
+  <h1>학생부 작성 도우미</h1>
+  <p class="sub">접근 코드를 입력하세요</p>
+
+  <input type="password" id="pw-input" placeholder="접근 코드 입력"
+    onkeydown="if(event.key==='Enter') checkLogin()"/>
+  <p class="err-msg" id="err-msg">접근 코드가 올바르지 않습니다.</p>
+  <button class="btn" id="login-btn" onclick="checkLogin()">입장하기</button>
+
+  <p class="footer">Made by <strong>수달샘</strong> &middot; Powered by Claude</p>
+</div>
+
+<script>
+/* 이미 인증된 경우 바로 이동 */
+if (localStorage.getItem('hb_auth')) {
+  location.href = '/index.html';
+}
+
+async function checkLogin() {
+  const code = document.getElementById('pw-input').value.trim();
+  const errEl = document.getElementById('err-msg');
+  const btn   = document.getElementById('login-btn');
+
+  if (!code) return;
+
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = '확인 중...';
+
+  try {
+    /* 서버에서 접근 코드 검증 */
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Access-Code': code
+      },
+      body: JSON.stringify({ _auth_check: true })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.ok) {
+        localStorage.setItem('hb_auth', code);
+        location.href = '/index.html';
+        return;
+      }
+    }
+    /* 실패 */
+    errEl.style.display = 'block';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  } catch(e) {
+    errEl.textContent = '서버 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+    errEl.style.display = 'block';
+  }
+
+  btn.disabled = false;
+  btn.textContent = '입장하기';
+}
+</script>
+</body>
+</html>
