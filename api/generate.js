@@ -1,13 +1,9 @@
 /**
  * api/generate.js — Vercel Serverless Function
  *
- * 역할
- *  1. X-Access-Code 헤더로 접근 코드 검증
- *  2. 인증 확인 전용 요청(_auth_check) 처리
- *  3. 검증 통과 시 OpenRouter API로 요청 전달
+ * 역할: OpenRouter API 프록시 (API 키 서버에서 보호)
  *
  * 환경변수 (Vercel 대시보드 → Settings → Environment Variables)
- *  ACCESS_CODE        : 접근 코드
  *  OPENROUTER_API_KEY : OpenRouter API 키
  */
 
@@ -25,17 +21,11 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Access-Code');
-  res.setHeader('Vary', 'Origin'); // 캐시가 Origin별로 구분되도록
+  res.setHeader('Vary', 'Origin');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') {
     return res.status(405).json({ error: { message: 'Method not allowed' } });
-  }
-
-  /* ── 접근 코드 검증 ── */
-  const accessCode = req.headers['x-access-code'];
-  if (!accessCode || accessCode !== process.env.ACCESS_CODE) {
-    return res.status(401).json({ error: { message: '접근 코드가 올바르지 않습니다.' } });
   }
 
   /* ── 인증 확인 전용 요청 ── */
