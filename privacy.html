@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>개인정보처리방침 · 학생부 작성 도우미</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      color: #333;
+      line-height: 1.8;
+    }
+    header {
+      background: #2563eb;
+      color: white;
+      padding: 24px 40px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header h1 { font-size: 20px; font-weight: 700; }
+    header .back-link {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    header .back-link:hover { color: white; }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background: white;
+      border-radius: 12px;
+      padding: 48px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .effective-date {
+      display: inline-block;
+      background: #eff6ff;
+      color: #2563eb;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 20px;
+      margin-bottom: 32px;
+    }
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 24px;
+    }
+    h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #2563eb;
+      margin: 28px 0 10px;
+      padding-left: 12px;
+      border-left: 3px solid #2563eb;
+    }
+    p { font-size: 14px; color: #475569; margin-bottom: 12px; }
+    .section {
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 28px;
+      margin-bottom: 28px;
+    }
+    .section:last-of-type { border-bottom: none; }
+    .highlight-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: 14px;
+      color: #166534;
+    }
+    .warning-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: 14px;
+      color: #92400e;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 16px 0;
+    }
+    th {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      color: #374151;
+    }
+    td {
+      border: 1px solid #e2e8f0;
+      padding: 10px 14px;
+      color: #475569;
+      vertical-align: top;
+    }
+    .contact-info {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 20px;
+      font-size: 14px;
+    }
+    .contact-info p { margin-bottom: 6px; }
+    footer {
+      text-align: center;
+      padding: 32px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="back-link">← 돌아가기</a>
+  <h1>개인정보처리방침</h1>
+</header>
+
+<div class="container">
+  <div class="effective-date">📅 시행일자: 2025년 1월 1일 · 최종 수정: 2025년 6월 1일</div>
+
+  <h2>학생부 작성 도우미 개인정보처리방침</h2>
+
+  <div class="highlight-box">
+    본 서비스(학생부 작성 도우미)는 <strong>개인정보를 수집하지 않습니다.</strong>
+    입력하신 학생 활동 내용은 AI 문장 생성 목적으로만 사용되며, 서버에 저장되지 않습니다.
+  </div>
+
+  <!-- 제1조 -->
+  <div class="section">
+    <h3>제1조 (개인정보처리방침의 의의)</h3>
+    <p>수달샘(이하 "운영자")은 「개인정보 보호법」 제30조에 따라 정보주체의 개인정보를 보호하고 이와 관련한 고충을 신속하고 원활하게 처리하기 위하여 다음과 같이 개인정보처리방침을 수립·공개합니다.</p>
+  </div>
+
+  <!-- 제2조 -->
+  <div class="section">
+    <h3>제2조 (개인정보의 처리 목적 및 수집 항목)</h3>
+    <p>본 서비스는 다음의 목적으로만 동작하며, 목적 외 용도로 이용하지 않습니다.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>처리 목적</th>
+          <th>수집 항목</th>
+          <th>보유 기간</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>AI 학생부 문장 생성</td>
+          <td>사용자가 입력한 학생 활동 내용<br>(이름 미포함 권장)</td>
+          <td>요청 처리 후 즉시 삭제<br>(서버 미저장)</td>
+        </tr>
+        <tr>
+          <td>서비스 오류 분석</td>
+          <td>오류 발생 시 로그 (IP 미포함)</td>
+          <td>7일 후 자동 삭제</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="warning-box">
+      ⚠️ 학생의 실명, 주민등록번호, 학번 등 식별 가능한 정보를 입력하지 마세요.
+      활동 내용 위주로만 입력하는 것을 권장합니다.
+    </div>
+  </div>
+
+  <!-- 제3조 -->
+  <div class="section">
+    <h3>제3조 (개인정보의 제3자 제공)</h3>
+    <p>운영자는 원칙적으로 정보주체의 개인정보를 제3자에게 제공하지 않습니다. 단, 입력된 내용은 AI 문장 생성을 위해 아래 외부 서비스의 API를 통해 처리됩니다.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>제공받는 자</th>
+          <th>제공 목적</th>
+          <th>제공 항목</th>
+          <th>보유 기간</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>OpenRouter / Anthropic</td>
+          <td>AI 문장 생성</td>
+          <td>사용자 입력 텍스트</td>
+          <td>각 사업자 정책에 따름</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>각 사업자의 개인정보처리방침은 <a href="https://openrouter.ai/privacy" target="_blank" rel="noopener">OpenRouter 개인정보처리방침</a>, <a href="https://www.anthropic.com/privacy" target="_blank" rel="noopener">Anthropic 개인정보처리방침</a>을 참고하세요.</p>
+  </div>
+
+  <!-- 제4조 -->
+  <div class="section">
+    <h3>제4조 (개인정보의 안전성 확보 조치)</h3>
+    <p>운영자는 개인정보의 안전성 확보를 위해 다음과 같은 조치를 취하고 있습니다.</p>
+    <p>• <strong>데이터 비저장:</strong> 사용자 입력 내용을 서버 데이터베이스에 저장하지 않습니다.</p>
+    <p>• <strong>전송 구간 암호화:</strong> HTTPS(TLS)를 통해 모든 통신을 암호화합니다.</p>
+    <p>• <strong>API 키 보호:</strong> AI API 키는 서버 환경변수에만 저장되며 클라이언트에 노출되지 않습니다.</p>
+    <p>• <strong>접근 제어:</strong> 관리자 이외의 내부 접근을 제한합니다.</p>
+  </div>
+
+  <!-- 제5조 -->
+  <div class="section">
+    <h3>제5조 (정보주체의 권리)</h3>
+    <p>정보주체는 운영자에 대해 언제든지 다음 각 호의 개인정보 보호 관련 권리를 행사할 수 있습니다.</p>
+    <p>• 개인정보 열람 요구</p>
+    <p>• 오류 등이 있을 경우 정정 요구</p>
+    <p>• 삭제 요구</p>
+    <p>• 처리 정지 요구</p>
+    <p>본 서비스는 데이터를 저장하지 않으므로, 요청 즉시 처리됩니다.</p>
+  </div>
+
+  <!-- 제6조 -->
+  <div class="section">
+    <h3>제6조 (쿠키 및 로컬스토리지 사용)</h3>
+    <p>본 서비스는 별도의 쿠키를 사용하지 않습니다. 작성 중인 내용의 임시 저장은 사용자의 브라우저 로컬스토리지에만 저장되며, 서버로 전송되지 않습니다.</p>
+  </div>
+
+  <!-- 제7조 -->
+  <div class="section">
+    <h3>제7조 (개인정보 보호책임자)</h3>
+    <div class="contact-info">
+      <p><strong>성명:</strong> 수달샘 (운영자)</p>
+      <p><strong>서비스명:</strong> 학생부 작성 도우미</p>
+      <p><strong>이메일:</strong> [연락처 이메일 입력]</p>
+      <p><strong>소속:</strong> 개인 운영</p>
+    </div>
+    <p style="margin-top:14px">정보주체는 개인정보 보호법 제35조에 따른 개인정보의 열람 청구를 위 담당자에게 하실 수 있습니다.</p>
+  </div>
+
+  <!-- 제8조 -->
+  <div class="section">
+    <h3>제8조 (권익침해 구제 방법)</h3>
+    <p>정보주체는 개인정보침해로 인한 구제를 받기 위하여 개인정보분쟁조정위원회, 한국인터넷진흥원 개인정보침해신고센터 등에 분쟁해결이나 상담 등을 신청할 수 있습니다.</p>
+    <p>• <strong>개인정보 침해신고센터:</strong> (국번없이) 118 / <a href="https://privacy.kisa.or.kr" target="_blank" rel="noopener">privacy.kisa.or.kr</a></p>
+    <p>• <strong>개인정보 분쟁조정위원회:</strong> (국번없이) 1833-6972 / <a href="https://www.kopico.go.kr" target="_blank" rel="noopener">kopico.go.kr</a></p>
+    <p>• <strong>대검찰청 사이버수사과:</strong> (국번없이) 1301 / <a href="https://www.spo.go.kr" target="_blank" rel="noopener">spo.go.kr</a></p>
+    <p>• <strong>경찰청 사이버수사국:</strong> (국번없이) 182 / <a href="https://ecrm.cyber.go.kr" target="_blank" rel="noopener">ecrm.cyber.go.kr</a></p>
+  </div>
+
+  <!-- 부칙 -->
+  <div class="section">
+    <h3>부칙</h3>
+    <p>본 개인정보처리방침은 <strong>2025년 1월 1일</strong>부터 적용됩니다.</p>
+    <p>이전 개인정보처리방침은 존재하지 않습니다. (최초 제정)</p>
+  </div>
+
+</div>
+
+<footer>
+  Made by <strong>수달샘</strong> · Powered by Claude &nbsp;·&nbsp;
+  <a href="/" style="color:#2563eb;">서비스로 돌아가기</a>
+</footer>
+
+</body>
+</html>
