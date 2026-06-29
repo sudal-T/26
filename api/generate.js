@@ -42,7 +42,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
         'HTTP-Referer': 'https://26-indol-two.vercel.app',
-        'X-Title': '학생부 작성 도우미'
+        'X-Title': 'Haksenbu Writing Assistant' // ✅ 한글 → ASCII로 변경 (헤더는 ASCII만 허용)
       },
       body: JSON.stringify(body)
     });
